@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace CursorInstaller
 {
@@ -12,11 +13,15 @@ namespace CursorInstaller
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
         public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
 
+#if UNINSTALL
+        public static bool Uninstall = true;
+#else
+        public static bool Uninstall = false;
+#endif
+
         const int SPI_SETCURSORS = 0x0057;
         const int SPIF_UPDATEINIFILE = 0x01;
         const int SPIF_SENDCHANGE = 0x02;
-
-        const int USER_SCHEME = 0x02;
 
         private const string ConfigFileName = "Config.json";
 
@@ -24,12 +29,14 @@ namespace CursorInstaller
         {
             // GET VALUE NAMES AND VALUES FROM CONFIG
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            
+
+#if !UNINSTALL
             Config config;
             try
             {
                 config = JsonFileReader.Read<Config>(Path.Join(assemblyPath, ConfigFileName));
             }
+
             // TELL USER IF THE CONFIG FILE IS MISSING AND ABORT
             catch (FileNotFoundException e)
             {
@@ -51,11 +58,15 @@ namespace CursorInstaller
                 return;
             }
 
+#endif
+
             // SET Registry Keys 
 
             RegistryKey currentUser = Registry.CurrentUser;
             RegistryKey controlPanel = currentUser.OpenSubKey("Control Panel");
-            RegistryKey cursorsKey = controlPanel.OpenSubKey("Cursors");
+            RegistryKey cursorsKey = controlPanel.OpenSubKey("Cursors",true);
+
+#if !UNINSTALL
 
             // CHECK THAT THE CURSOR FILES EXIST AND SKIP FILE IF NOT
 
@@ -66,33 +77,50 @@ namespace CursorInstaller
                     Console.WriteLine($"'{keyValuePair.Key}' is not a valid key so we're skipping it..");
                     continue;
                 }
-                
+
+                if (keyValuePair.Key == "")
+                {
+                    cursorsKey.SetValue("", keyValuePair.Value, RegistryValueKind.String);
+                    Console.WriteLine($"Set collection name to {keyValuePair.Value}");
+                    continue;
+                }
+
                 string filePath = Path.Join(assemblyPath, keyValuePair.Value);
 
-                if (!File.Exists(filePath))
+                if (!File.Exists(filePath) && keyValuePair.Key != "")
                 {
                     Console.WriteLine($"No file exists at ${filePath} so we're skipping it..");
                     continue;
                 }
 
-                cursorsKey.SetValue(keyValuePair.Key, keyValuePair.Value, 
-                    keyValuePair.Key == "" ? RegistryValueKind.String : RegistryValueKind.ExpandString);
-                Console.WriteLine($"Set Key {keyValuePair.Key} to ${keyValuePair.Value} successfully");
+                cursorsKey.SetValue(keyValuePair.Key, filePath, RegistryValueKind.ExpandString);
+                Console.WriteLine($"Set Key {keyValuePair.Key} to {keyValuePair.Value} successfully");
+            }
+#endif
+
+            // UNINSTALL CURSORS
+
+#if UNINSTALL
+
+            foreach (string key in validKeys)
+            {
+                cursorsKey.SetValue(key, "");
+                Console.WriteLine($"Reset key {key} to windows default successfully");
             }
 
+#endif
             ////
-
-            // SET User Scheme Key
-            cursorsKey.SetValue("Scheme Source", USER_SCHEME, RegistryValueKind.DWord);
-            Console.WriteLine("Set System scheme to User Scheme");
 
             // NOTIFY Windows of changes
             SystemParametersInfo(SPI_SETCURSORS, 0, 0, SPIF_SENDCHANGE | SPIF_UPDATEINIFILE);
             Console.WriteLine("Notified windows of changes");
 
             // TELL USER TO PRESS KEY TO EXIT
+            controlPanel.Close();
+            cursorsKey.Close();
             Exit();
         }
+
 
         public static void Exit()
         {

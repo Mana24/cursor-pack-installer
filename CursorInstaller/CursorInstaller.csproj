@@ -5,6 +5,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;uninstall_Release</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Uninstall_Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);UNINSTALL</DefineConstants>
   </PropertyGroup>
 
 </Project>
