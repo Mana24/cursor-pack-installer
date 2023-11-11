@@ -16,6 +16,8 @@ namespace CursorInstaller
         const int SPIF_UPDATEINIFILE = 0x01;
         const int SPIF_SENDCHANGE = 0x02;
 
+        const int USER_SCHEME = 0x02;
+
         private const string ConfigFileName = "Config.json";
 
         static void Main(string[] args)
@@ -51,43 +53,54 @@ namespace CursorInstaller
 
             // SET Registry Keys 
 
+            RegistryKey currentUser = Registry.CurrentUser;
+            RegistryKey controlPanel = currentUser.OpenSubKey("Control Panel");
+            RegistryKey cursorsKey = controlPanel.OpenSubKey("Cursors");
+
             // CHECK THAT THE CURSOR FILES EXIST AND SKIP FILE IF NOT
+
+            foreach (KeyValuePair<string, string> keyValuePair in config.CursorNameToFilePath)
+            {
+                if (!validKeys.Contains(keyValuePair.Key))
+                {
+                    Console.WriteLine($"'{keyValuePair.Key}' is not a valid key so we're skipping it..");
+                    continue;
+                }
+                
+                string filePath = Path.Join(assemblyPath, keyValuePair.Value);
+
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine($"No file exists at ${filePath} so we're skipping it..");
+                    continue;
+                }
+
+                cursorsKey.SetValue(keyValuePair.Key, keyValuePair.Value, 
+                    keyValuePair.Key == "" ? RegistryValueKind.String : RegistryValueKind.ExpandString);
+                Console.WriteLine($"Set Key {keyValuePair.Key} to ${keyValuePair.Value} successfully");
+            }
 
             ////
 
             // SET User Scheme Key
+            cursorsKey.SetValue("Scheme Source", USER_SCHEME, RegistryValueKind.DWord);
+            Console.WriteLine("Set System scheme to User Scheme");
 
             // NOTIFY Windows of changes
+            SystemParametersInfo(SPI_SETCURSORS, 0, 0, SPIF_SENDCHANGE | SPIF_UPDATEINIFILE);
+            Console.WriteLine("Notified windows of changes");
 
             // TELL USER TO PRESS KEY TO EXIT
-
-
-            //RegistryKey currentUser = Registry.CurrentUser;
-            //RegistryKey controlPanel = currentUser.OpenSubKey("Control Panel");
-            //RegistryKey cursorsKey = controlPanel.OpenSubKey("Cursors");
-
-            //Console.WriteLine(cursorsKey.GetValueNames().Length);
-
-            //for (int i = 0; i < cursorsKey.ValueCount; i++)
-            //{
-            //    string valueName = cursorsKey.GetValueNames()[i];
-
-            //    Console.Write(valueName); Console.Write(" ");
-            //    Console.WriteLine(cursorsKey.GetValue(valueName));
-
-            //}
-            //controlPanel.Close();
-            //cursorsKey.Close();
-
-            // SystemParametersInfo(SPI_SETCURSORS, 0, 0, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+            Exit();
         }
 
         public static void Exit()
         {
-
+            Console.Write("\nPress any key to exit...");
+            Console.ReadKey();
         }
 
-        private string[] validKeys =
+        public static string[] validKeys =
         {
             "",
             "AppStarting",
