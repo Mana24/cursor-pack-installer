@@ -11,13 +11,8 @@ namespace CursorInstaller
     {
 
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, uint pvParam, uint fWinIni);
-
-#if UNINSTALL
-        public static bool Uninstall = true;
-#else
-        public static bool Uninstall = false;
-#endif
 
         const int SPI_SETCURSORS = 0x0057;
         const int SPIF_UPDATEINIFILE = 0x01;
@@ -99,9 +94,10 @@ namespace CursorInstaller
             }
 #endif
 
-            // UNINSTALL CURSORS
 
 #if UNINSTALL
+
+            // UNINSTALL CURSORS
 
             RegistryKey localmachine = Registry.LocalMachine;
             RegistryKey softwareKey = localmachine.OpenSubKey("SOFTWARE");
@@ -112,6 +108,7 @@ namespace CursorInstaller
             RegistryKey windowsCursorsKey = currentControlPanelKey?.OpenSubKey("Cursors");
             RegistryKey defaultKey = windowsCursorsKey?.OpenSubKey("Default");
 
+
             if (defaultKey == null)
             {
                 Console.WriteLine(
@@ -121,6 +118,8 @@ namespace CursorInstaller
                     cursorsKey.SetValue(key, "");
                     Console.WriteLine($"Reset key {key} to windows default successfully");
                 }
+                SystemParametersInfo(SPI_SETCURSORS, 0, 0, SPIF_SENDCHANGE | SPIF_UPDATEINIFILE);
+                Console.WriteLine("Notified windows of changes");
                 Exit();
                 return;
             }
