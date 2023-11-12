@@ -67,6 +67,7 @@ namespace CursorInstaller
             RegistryKey cursorsKey = controlPanel.OpenSubKey("Cursors",true);
 
 #if !UNINSTALL
+            
 
             // CHECK THAT THE CURSOR FILES EXIST AND SKIP FILE IF NOT
 
@@ -102,9 +103,31 @@ namespace CursorInstaller
 
 #if UNINSTALL
 
-            foreach (string key in validKeys)
+            RegistryKey localmachine = Registry.LocalMachine;
+            RegistryKey softwareKey = localmachine.OpenSubKey("SOFTWARE");
+            RegistryKey microsoftKey = softwareKey?.OpenSubKey("Microsoft");
+            RegistryKey windowsKey = microsoftKey?.OpenSubKey("Windows");
+            RegistryKey currentVersionKey = windowsKey?.OpenSubKey("CurrentVersion");
+            RegistryKey currentControlPanelKey = currentVersionKey?.OpenSubKey("Control Panel");
+            RegistryKey windowsCursorsKey = currentControlPanelKey?.OpenSubKey("Cursors");
+            RegistryKey defaultKey = windowsCursorsKey?.OpenSubKey("Default");
+
+            if (defaultKey == null)
             {
-                cursorsKey.SetValue(key, "");
+                Console.WriteLine(
+                    "Couldn't find the cursor defaults key so we're getting you half way there. \nYou might want to go into settings and reset to default manually\n");
+                foreach (string key in validKeys)
+                {
+                    cursorsKey.SetValue(key, "");
+                    Console.WriteLine($"Reset key {key} to windows default successfully");
+                }
+                Exit();
+                return;
+            }
+
+            foreach (string key in defaultKey.GetValueNames())
+            {
+                cursorsKey.SetValue(key, defaultKey.GetValue(key), defaultKey.GetValueKind(key));
                 Console.WriteLine($"Reset key {key} to windows default successfully");
             }
 
@@ -115,9 +138,19 @@ namespace CursorInstaller
             SystemParametersInfo(SPI_SETCURSORS, 0, 0, SPIF_SENDCHANGE | SPIF_UPDATEINIFILE);
             Console.WriteLine("Notified windows of changes");
 
+            // Close keys
+            controlPanel?.Close();
+            cursorsKey?.Close();
+#if UNINSTALL
+            softwareKey?.Close();
+            microsoftKey?.Close();
+            windowsKey?.Close();
+            currentVersionKey?.Close();
+            currentControlPanelKey?.Close();
+            windowsCursorsKey?.Close();
+            defaultKey?.Close();
+#endif
             // TELL USER TO PRESS KEY TO EXIT
-            controlPanel.Close();
-            cursorsKey.Close();
             Exit();
         }
 

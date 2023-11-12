@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Configurations>Debug;Release;uninstall_Release</Configurations>
+    <Configurations>Debug;Release;uninstall_Release;uninstall_Debug</Configurations>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -14,6 +14,12 @@
     <DefineConstants>$(DefineConstants);UNINSTALL</DefineConstants>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='uninstall_Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);UNINSTALL</DefineConstants>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <Optimize>False</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
