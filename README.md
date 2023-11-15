@@ -28,26 +28,26 @@ And with a Config.json file like this. The cursor names are quite important to b
 {
    "CursorNameToFilePath": {
       "": "My Awesome Cursors",
-      "AppStarting": "./Cursors/loading.ani",
-      "Arrow": "./Cursors/base.ani",
-      "Crosshair": "./Cursors/precision.ani",
-      "Hand": "./Cursors/link.ani",
-      "Help": "./Cursors/help.ani",
-      "IBeam": "./Cursors/text.ani",
-      "No": "./Cursors/unavailable.ani",
-      "NWPen": "./Cursors/handwriting.ani",
-      "Person": "./Cursors/person.ani",
-      "Pin": "./Cursors/location.ani",
-      "SizeAll": "./Cursors/move.ani",
-      "SizeNESW": "./Cursors/resize_d2.ani",
-      "SizeNS": "./Cursors/resize_v.ani",
-      "SizeNWSE": "./Cursors/resize_d1.ani",
-      "SizeWE": "./Cursors/resize_h.ani",
-      "UpArrow": "./Cursors/alternate.ani",
-      "Wait": "./Cursors/busy.ani"
+      "AppStarting": "Cursors/loading.ani",
+      "Arrow": "Cursors/base.ani",
+      "Crosshair": "Cursors/precision.ani",
+      "Hand": "Cursors/link.ani",
+      "Help": "Cursors/help.ani",
+      "IBeam": "Cursors/text.ani",
+      "No": "Cursors/unavailable.ani",
+      "NWPen": "Cursors/handwriting.ani",
+      "Person": "Cursors/person.ani",
+      "Pin": "Cursors/location.ani",
+      "SizeAll": "Cursors/move.ani",
+      "SizeNESW": "Cursors/resize_d2.ani",
+      "SizeNS": "Cursors/resize_v.ani",
+      "SizeNWSE": "Cursors/resize_d1.ani",
+      "SizeWE": "Cursors/resize_h.ani",
+      "UpArrow": "Cursors/alternate.ani",
+      "Wait": "Cursors/busy.ani"
    }
 }
 ```
-Installing or uninstalling your cursor pack after its configured like this is as simple as double clicking either Installer.exe or Uninstaller.exe relatively.
+Installing or uninstalling your cursor pack after it is configured like this is as simple as double clicking either Installer.exe or Uninstaller.exe relatively.
 
-Moving or deleting the cursors after installation is likely to break the install so you are advised to warn your users about that.
+Moving or deleting the cursors after installation is likely to break the installation so you are advised to warn your users about that.
